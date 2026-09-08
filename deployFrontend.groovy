@@ -4,3 +4,4 @@ def call(Map config = [:]) {
     echo "Server: ${config.server}"
     echo "Path: ${config.deployPath}"
 }
+#*check if the config map contains the required keys
