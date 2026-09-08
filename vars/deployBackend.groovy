@@ -1,7 +1,6 @@
 def call(Map config = [:]) {
-    echo "Frontend deployment started"
+    echo "Backend deployment started"
     echo "Application: ${config.appName}"
     echo "Server: ${config.server}"
     echo "Path: ${config.deployPath}"
 }
-#*check if the config map contains the required keys
