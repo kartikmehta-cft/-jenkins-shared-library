@@ -51,6 +51,62 @@ def call(Map config = [:]) {
         }
     }
 
+    stage('Prepare Remote Directory') {
+
+        withCredentials([
+            sshUserPrivateKey(
+                credentialsId: sshCredId,
+                keyFileVariable: 'SSH_KEY',
+                usernameVariable: 'SSH_USER'
+            )
+        ]) {
+
+            withEnv([
+                "TARGET_HOST=${host}",
+                "DEPLOY_PATH=${deployPath}"
+            ]) {
+
+                sh '''
+                    chmod 600 "$SSH_KEY"
+
+                    ssh -o StrictHostKeyChecking=no \
+                        -i "$SSH_KEY" \
+                        "$SSH_USER@$TARGET_HOST" \
+                        "mkdir -p '$DEPLOY_PATH'"
+                '''
+            }
+        }
+    }
+
+    stage('Copy Application') {
+
+        withCredentials([
+            sshUserPrivateKey(
+                credentialsId: sshCredId,
+                keyFileVariable: 'SSH_KEY',
+                usernameVariable: 'SSH_USER'
+            )
+        ]) {
+
+            withEnv([
+                "TARGET_HOST=${host}",
+                "DEPLOY_PATH=${deployPath}"
+            ]) {
+
+                sh '''
+                    chmod 600 "$SSH_KEY"
+
+                    rsync -avz \
+                        --exclude='.git' \
+                        --exclude='node_modules' \
+                        --exclude='.env' \
+                        -e "ssh -o StrictHostKeyChecking=no -i $SSH_KEY" \
+                        ./ "$SSH_USER@$TARGET_HOST:$DEPLOY_PATH/"
+                '''
+            }
+        }
+    }
+
     stage('Docker Compose Deploy') {
 
         withCredentials([
