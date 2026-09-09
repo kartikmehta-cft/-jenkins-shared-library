@@ -35,14 +35,19 @@ def call(Map config = [:]) {
             )
         ]) {
 
-            sh '''
-                chmod 600 "$SSH_KEY"
+            withEnv([
+                "TARGET_HOST=${host}"
+            ]) {
 
-                ssh -o StrictHostKeyChecking=no \
-                    -i "$SSH_KEY" \
-                    "$SSH_USER@$TARGET_HOST" \
-                    "whoami && hostname && docker ps"
-            '''
+                sh '''
+                    chmod 600 "$SSH_KEY"
+
+                    ssh -o StrictHostKeyChecking=no \
+                        -i "$SSH_KEY" \
+                        "$SSH_USER@$TARGET_HOST" \
+                        "whoami && hostname && docker ps"
+                '''
+            }
         }
     }
 
