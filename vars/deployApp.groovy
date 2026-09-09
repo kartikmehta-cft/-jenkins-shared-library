@@ -13,39 +13,34 @@ def call(Map config = [:]) {
     def appConfig = deploymentConfig[project]
 
     if (!appConfig) {
-        error "No deployment configuration found for: ${project}"
+        error "No deployment configuration found for ${project}"
     }
 
     def host = appConfig.host
     def deployPath = appConfig.deployPath
     def sshCredId = appConfig.serverCredential
 
-    echo "Application  : ${project}"
-    echo "Target Host  : ${host}"
-    echo "Deploy Path  : ${deployPath}"
-    echo "SSH Credential: ${sshCredId}"
+    echo "Application: ${project}"
+    echo "Target Host: ${host}"
+    echo "Deploy Path: ${deployPath}"
+    echo "Credential: ${sshCredId}"
 
     stage('SSH Test') {
-
         sshagent([sshCredId]) {
-
             sh """
                 ssh -o StrictHostKeyChecking=no \
-                    deployer@${host} \
-                    'whoami && hostname'
+                deployer@${host} \
+                'whoami && hostname && docker ps'
             """
         }
     }
 
     stage('Docker Compose Deploy') {
-
         sshagent([sshCredId]) {
-
             sh """
                 ssh -o StrictHostKeyChecking=no \
-                    deployer@${host} \
-                    'cd ${deployPath} && \
-                     docker compose up -d --build'
+                deployer@${host} \
+                'cd ${deployPath} && docker compose up -d --build'
             """
         }
     }
